@@ -1,3 +1,4 @@
+#-*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -14,8 +15,10 @@ import torch.optim as optim
 from models import nin
 from torch.autograd import Variable
 
+
 def save_state(model, best_acc):
     print('==> Saving model ...')
+    # 모델과 정확도 저장
     state = {
             'best_acc': best_acc,
             'state_dict': model.state_dict(),
@@ -32,16 +35,16 @@ def train(epoch):
         # process the weights including binarization
         bin_op.binarization()
         
-        # forwarding
+        # 순전파
         data, target = Variable(data.cuda()), Variable(target.cuda())
         optimizer.zero_grad()
         output = model(data)
         
-        # backwarding
+        # 역전파
         loss = criterion(output, target)
         loss.backward()
         
-        # restore weights
+        # 파라미터 저장
         bin_op.restore()
         bin_op.updateBinaryGradWeight()
         
@@ -87,8 +90,14 @@ def adjust_learning_rate(optimizer, epoch):
             param_group['lr'] = param_group['lr'] * 0.1
     return
 
+
+
+
+
+
+
 if __name__=='__main__':
-    # prepare the options
+    # 옵션 주는 부분
     parser = argparse.ArgumentParser()
     parser.add_argument('--cpu', action='store_true',
             help='set if only CPU is available')
@@ -105,36 +114,41 @@ if __name__=='__main__':
     args = parser.parse_args()
     print('==> Options:',args)
 
-    # set the seed
+    # 랜덤 값으로 채워진 텐서 생성을 위해 seed 설정
     torch.manual_seed(1)
     torch.cuda.manual_seed(1)
 
-    # prepare the data
+    # 데이터 경로 확인
     if not os.path.isfile(args.data+'/train_data'):
         # check the data path
         raise Exception\
                 ('Please assign the correct data path with --data <DATA_PATH>')
 
+    # data.py의 dataset클래스 생성
     trainset = data.dataset(root=args.data, train=True)
+    # torch.utils.data.DataLoader는 불러온 data를 네트워크 입력으로 사용하기 위해 사전에 정리를 해주는 느낌
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=128,
             shuffle=True, num_workers=2)
 
+    # data.py의 dataset클래스 생성
     testset = data.dataset(root=args.data, train=False)
+    # torch.utils.data.DataLoader는 불러온 data를 네트워크 입력으로 사용하기 위해 사전에 정리를 해주는 느낌
     testloader = torch.utils.data.DataLoader(testset, batch_size=100,
             shuffle=False, num_workers=2)
 
-    # define classes
-    classes = ('plane', 'car', 'bird', 'cat',
-            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+    # 클래스 정의
+    classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
-    # define the model
+    # 모델 출력
     print('==> building model',args.arch,'...')
+    
+    # 옵션의 arch (architecture) 확인하고 nin아니면 에러
     if args.arch == 'nin':
         model = nin.Net()
     else:
         raise Exception(args.arch+' is currently not supported')
 
-    # initialize the model
+    # 옵션에 pretrained model을 사용하지 않을 경우
     if not args.pretrained:
         print('==> Initializing model parameters ...')
         best_acc = 0
@@ -142,18 +156,28 @@ if __name__=='__main__':
             if isinstance(m, nn.Conv2d):
                 m.weight.data.normal_(0, 0.05)
                 m.bias.data.zero_()
+                
+    # 옵션에 pretrained model을 사용하는 경우
     else:
         print('==> Load pretrained model form', args.pretrained, '...')
-        pretrained_model = torch.load(args.pretrained)
-        best_acc = pretrained_model['best_acc']
-        model.load_state_dict(pretrained_model['state_dict'])
+        # cpu만 사용가능한 상황에 적용하기 위해서 예외처리
+        try:
+            pretrained_model = torch.load(args.pretrained)
+        except:
+            pretrained_model = torch.load(args.pretrained, map_location = 'cpu')
+        finally:
+            best_acc = pretrained_model['best_acc']
+            model.load_state_dict(pretrained_model['state_dict'])
 
+    # 옵션에 cpu 없는 경우
     if not args.cpu:
         model.cuda()
         model = torch.nn.DataParallel(model, device_ids=range(torch.cuda.device_count()))
+    
     print(model)
 
-    # define solver and criterion
+
+    # learning rate, optimizer등 설정
     base_lr = float(args.lr)
     param_dict = dict(model.named_parameters())
     params = []
@@ -165,15 +189,16 @@ if __name__=='__main__':
     optimizer = optim.Adam(params, lr=0.10,weight_decay=0.00001)
     criterion = nn.CrossEntropyLoss()
 
-    # define the binarization operator
+
+    # util.py의 BinOp 클래스 생성 BinOp == binarization operator
     bin_op = util.BinOp(model)
 
-    # do the evaluation if specified
+    # 옵션에 evaluate 준 경우
     if args.evaluate:
         test()
         exit(0)
 
-    # start training
+    # 학습 시작하는 부분
     for epoch in range(1, 320):
         adjust_learning_rate(optimizer, epoch)
         train(epoch)
