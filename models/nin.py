@@ -4,7 +4,8 @@ import torch.nn.functional as F
 
 class BinActive(torch.autograd.Function):
     '''
-    Binarize the input activations and calculate the mean across channel dimension.
+    입력으로 들어온 activations를 이진화하고, 채널의 차원은 평균값으로 바꾼다.
+    torch.nn은 미니배치 형태의 input만 지원
     '''
     def forward(self, input):
         self.save_for_backward(input)
@@ -30,10 +31,12 @@ class BinConv2d(nn.Module):
         self.padding = padding
         self.dropout_ratio = dropout
 
+        # BatchNorm2d : 2D input의 미니 배치에 대해 배치 정규화를 적용
         self.bn = nn.BatchNorm2d(input_channels, eps=1e-4, momentum=0.1, affine=True)
         self.bn.weight.data = self.bn.weight.data.zero_().add(1.0)
         if dropout!=0:
             self.dropout = nn.Dropout(dropout)
+        # Conv2d : 입력 이미지에 2d Convolution을 적용
         self.conv = nn.Conv2d(input_channels, output_channels,
                 kernel_size=kernel_size, stride=stride, padding=padding)
         self.relu = nn.ReLU(inplace=True)
