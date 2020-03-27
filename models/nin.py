@@ -54,6 +54,11 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         self.xnor = nn.Sequential(
+            '''
+            < nn.Conv2d > 
+            torch.nn.Conv2d(in_channels, out_channels, kernel_size, \
+            stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros')
+            '''
                 nn.Conv2d(3, 192, kernel_size=5, stride=1, padding=2),
                 nn.BatchNorm2d(192, eps=1e-4, momentum=0.1, affine=False),
                 nn.ReLU(inplace=True),
