@@ -77,40 +77,43 @@ class BinConv2d(nn.Module):
         return x
 
 class Net(nn.Module):
+    '''
+    < nn.Sequential() >
+    순차적 컨테이너. 생성자에 전달 된 순서대로 모듈이 추가된다.  순서가 지정된 모듈을 전달할 수도 있다.
+    < nn.Conv2d() > 
+    input(텐서)에 대해 2D 컨벌루션을 적용.
+    torch.nn.Conv2d(in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros')
+    
+    < nn.BatchNorm2d() >
+    4D input에 대해 배치 정규화를 적용.
+    torch.nn.BatchNorm2d( num_features , eps = 1e-05 , momentum = 0.1 , affine = True , track_running_stats = True )
+    
+    < nn.ReLU >
+    torch.nn.ReLU( inplace = False )
+    ReLU 함수를 element 단위로 적용.
+    
+    < BinConv2d() >
+    (input_channels, output_channels, kernel_size=-1, stride=-1, padding=-1, dropout=0):
+    ex) 
+    BinConv2d(192, 160, kernel_size=1, stride=1, padding=0) 
+    
+    
+    < nn.MaxPool2d() >
+    input(텐서)에 2D max pooling을 적용.
+    torch.nn.MaxPool2d( kernel_size , stride = None , padding = 0 , dilation = 1 , return_indices = False , ceil_mode = False )
+    
+    < nn.AvgPool2d() >
+    input(텐서)에 2D 평균 풀링을 적용.
+    torch.nn.AvgPool2d( kernel_size , stride = None , padding = 0 , ceil_mode = False , count_include_pad = True , divisor_override = None )
+    
+    '''
     def __init__(self):
         # super()는 클래스 상속과 연관된 함수로 부모 클래스를 참조
         # 자식 클래스에서 메소드 이름을 가지고 부모 클래스의 메소드를 찾을 수 있음
         super(Net, self).__init__()
         
         self.xnor = nn.Sequential(
-            '''
-            < nn.Sequential() >
-           순차적 컨테이너. 생성자에 전달 된 순서대로 모듈이 추가된다.  순서가 지정된 모듈을 전달할 수도 있다.
-  
-            < nn.Conv2d() > 
-            input(텐서)에 대해 2D 컨벌루션을 적용.
-            torch.nn.Conv2d(in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros')
-            
-            < nn.BatchNorm2d() >
-            4D input에 대해 배치 정규화를 적용.
-            torch.nn.BatchNorm2d( num_features , eps = 1e-05 , momentum = 0.1 , affine = True , track_running_stats = True )
-            
-            < nn.ReLU >
-            torch.nn.ReLU( inplace = False )
-            ReLU 함수를 element 단위로 적용.
-            
-            < BinConv2d() >
-            
-            
-            < nn.MaxPool2d() >
-            input(텐서)에 2D max pooling을 적용.
-            torch.nn.MaxPool2d( kernel_size , stride = None , padding = 0 , dilation = 1 , return_indices = False , ceil_mode = False )
-            
-            < nn.AvgPool2d() >
-            input(텐서)에 2D 평균 풀링을 적용.
-            torch.nn.AvgPool2d( kernel_size , stride = None , padding = 0 , ceil_mode = False , count_include_pad = True , divisor_override = None )
-            
-            '''
+
                 nn.Conv2d(3, 192, kernel_size=5, stride=1, padding=2),
                 nn.BatchNorm2d(192, eps=1e-4, momentum=0.1, affine=False),
                 nn.ReLU(inplace=True),
