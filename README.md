@@ -7,15 +7,15 @@ XNOR_NET_PyTorch CIFAR10 코드 분석
 
 ## 구성
 
-< your_dir >
+< your_dir >  
 ㄴ--> main.py  
 ㄴ--> util.py  
 ㄴ--> data.py
 
-< your_dir/models >
+< your_dir/models >  
 ㄴ--> nin.py  
 
-< data_dir >
+< data_dir >  
 ㄴ--> train_data  
 ㄴ--> train_labels  
 ㄴ--> test_data  
@@ -40,7 +40,9 @@ XNOR_NET_PyTorch CIFAR10 코드 분석
 
 7. 인자를 통해서 pretrained model 사용 여부 확인  
 사용하는 경우 : pretrained model load 하고, best_acc를 pretrained model이 가지고 있는 값으로 설정  
-사용하지 않는 경우 : best_acc는 0, model의 모든 Conv2d 모듈의 weight는 평균 0, 표준편차 0.05를 따르는 정규분포로, bias는 0으로 설정  
+사용하지 않는 경우 : best_acc는 0,  
+model의 모든 Conv2d 모듈의 weight는 평균 0, 표준편차 0.05를 따르는 정규분포로,  
+bias는 0으로 설정  
 
 8. base_lr, Adam optimizer, CrossEntropy loss function 설정  
 
@@ -49,13 +51,13 @@ XNOR_NET_PyTorch CIFAR10 코드 분석
 10. train 시작
 
 a. bin_op.binarization() 실행  
-ㄴ--> Conv2d의 weight들의 평균값을 구하고, 평균값을 weight 각각에 빼준다
-ㄴ--> Conv2d의 weight를 -1.0 ~ 1.0 사이의 값으로 만든다. -1.0보다 작으면 -1.0, 1.0보다 크면 1.0
-ㄴ--> Conv2d의 weight를 따로 저장해둔다
-ㄴ--> Conv2d의 weight에 sign함수를 취해서 binarization  
--1 <= weight < 0 --> weight = -1  
-weight == 0 --> weight = 0  
-0 < weight <= 1 --> weight = 1  
+ㄴ--> Conv2d의 weight들의 평균값을 구하고, 평균값을 weight 각각에 빼준다  
+ㄴ--> Conv2d의 weight를 -1.0 ~ 1.0 사이의 값으로 만든다. -1.0보다 작으면 -1.0, 1.0보다 크면 1.0  
+ㄴ--> Conv2d의 weight를 따로 저장해둔다  
+ㄴ--> Conv2d의 weight에 sign함수를 취해서 binarization   
+-1 <= weight < 0 --> weight = -1   
+weight == 0 --> weight = 0   
+0 < weight <= 1 --> weight = 1   
 
 b. 순전파  
 model에 train_data를 넣고 예상되는 output을 계산한다.
